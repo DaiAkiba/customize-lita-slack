@@ -1,0 +1,4 @@
+en:
+  lita:
+    handlers:
+      get_user_files_handler:

@@ -1,6 +1,6 @@
 Lita.configure do |config|
   # The name your robot will use.
-  config.robot.name = "Lita"
+  config.robot.name = "lita"
 
   # The locale code for the language to use.
   # config.robot.locale = :en
@@ -8,7 +8,7 @@ Lita.configure do |config|
   # The severity of messages to log. Options are:
   # :debug, :info, :warn, :error, :fatal
   # Messages at the selected level and above will be logged.
-  config.robot.log_level = :info
+  config.robot.log_level = :debug
 
   # An array of user IDs that are considered administrators. These users
   # the ability to add and remove other users from authorization groups.
@@ -17,7 +17,8 @@ Lita.configure do |config|
 
   # The adapter you want to connect with. Make sure you've added the
   # appropriate gem to the Gemfile.
-  config.robot.adapter = :shell
+  # Slack連携
+  config.robot.adapter = :slack
 
   ## Example: Set options for the chosen adapter.
   # config.adapter.username = "myname"
@@ -30,4 +31,20 @@ Lita.configure do |config|
   ## Example: Set configuration for any loaded handlers. See the handler's
   ## documentation for options.
   # config.handlers.some_handler.some_config_key = "value"
+  # config.handlers.hello_handler.token = "xoxb-7432385031-Q3m56Etq2tyLRiUI04IpbujF"
+    logfile = "lita_handler.log"
+    logrotate = 7
+    config.handlers.hello_handler.token = ENV["SLACK_API_KEY"]
+    config.handlers.get_user_files_handler.token = ENV["SLACK_API_KEY"]
+    config.handlers.get_user_files_handler.logfile = logfile
+    config.handlers.get_user_files_handler.logrotate = logrotate
+
+  # Slack
+  # API Keyはherokuの環境変数に設定
+  # config.adapters.slack.token = ENV["SLACK_API_KEY"]
+    config.adapters.slack.token = ENV["LITA_SLACK_KEY"]
+
+  # herokuのredisアドオンredis to go関連の設定
+  # config.redis[:url] = ENV["REDISTOGO_URL"]
+  # config.http.port = ENV["PORT"]
 end

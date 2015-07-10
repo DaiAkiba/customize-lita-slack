@@ -1,6 +1,11 @@
 source "https://rubygems.org"
+ruby "2.1.4"
 
 gem "lita"
+gem "lita-slack"
+gem "slack-ruby"
+gem "lita-hello_handler", path: "handlers/lita-hello_handler"
+gem "lita-get-user-files-handler", path: "handlers/lita-get-user-files-handler"
 
 # Uncomment to use the HipChat adapter
 # gem "lita-hipchat"
