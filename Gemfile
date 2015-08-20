@@ -1,5 +1,6 @@
 source "https://rubygems.org"
-ruby "2.1.4"
+#ruby "2.1.4"
+raise 'Ruby version must be greater than 2.0' unless  RUBY_VERSION.to_f > 2.0
 
 gem "lita"
 gem "lita-slack"
