@@ -14,20 +14,22 @@ module Lita
         config :logrotate
         # get file list
         route /^getfl/,
-               :response_files_list,
+               :response_file_list,
                command: true,
                kwargs: {
                    date: { short: "d", default: Time.now.strftime("%Y%m%d") },
                    user: { short: "u" }
                },
-               help: {"getfl" => "resopnse files list." }
-        # get someone's file list
-        route /^getsfl\s+(.+)/, :response_someones_files_list
+               help: {"getfl" => I18n.t("lita.handlers.help.getfl") }
         # delete file list
-        route /^delfl/, :response_deleted_files_list, help: {"delfl" => "delete all your files." }
-        # delete someone's file list
-        route /^delsfl\s+(.+)/, :response_deleted_someones_files_list
-
+        route /^delfl/,
+               :response_deleted_file_list,
+               command: true,
+               kwargs: {
+                   date: { short: "d", default: Time.now.strftime("%Y%m%d") },
+                   user: { short: "u" }
+               },
+               help: {"delfl" => I18n.t("lita.handlers.help.delfl") }
 
         def initialize( args )
             super args
@@ -35,39 +37,28 @@ module Lita
             @logger = ::Logger.new(config.logfile, config.logrotate)
         end
 
-        def response_files_list(response)
-            @logger.info("Params #{response.extensions[:kwargs].length}")
-            @logger.info("Date Params #{response.extensions[:kwargs][:date]}")
-            @logger.info("User Params #{response.extensions[:kwargs][:user]}")
-        end
+        # summary
+        # パラメータで指定したユーザのファイルのうち、パラメータで指定した日付以前のファイル一覧を
+        # レスポンスとして返す
+        # @param Lita::Response Object
+        def response_file_list(response)
+            return response.reply(I18n.t("lita.handlers.errors.invalid_date_param")) unless setup_parameters?(response)
 
-        def response_user_files_list(response)
-            @logger.info("GetFiles Executed by #{response.user.name}")
-
-            #ファイル一覧を取得
-            fileList = Array.new
-            return unless get_file_list(fileList, response)
-
-            #ユーザIDが一致するファイルの一覧を返す
-            response_files(fileList, response.user.id, response.user.name, response)
-        end
-
-        def response_someones_files_list(response)
-            @logger.info("GetSomeone'sFiles Executed by #{response.user.name} about #{response.matches[0][0]}")
+            @logger.info("GetFile Executed by #{response.user.name} about #{@user}")
 
             #ファイル一覧を取得
             fileList = Array.new
-            return unless get_file_list(fileList, response)
+            return unless get_file_list?(fileList, response)
 
             #ユーザ一覧を取得
             userList = Array.new
-            return unless get_user_list(userList, response)
+            return unless get_user_list?(userList, response)
 
             userId = ''
 
             #ユーザ名が一致するユーザIDを返す
             userList.each do | user |
-                if user['name'] == response.matches[0][0] then
+                if user['name'] == @user then
                     userId = user['id']
                     @logger.info("UserID: #{userId}")
                     break
@@ -75,30 +66,25 @@ module Lita
             end
 
             #ユーザIDが一致するファイルの一覧を返す
-            response_files(fileList, userId, response.matches[0][0], response)
+            response_files(fileList, userId, response)
         end
 
-        def response_deleted_files_list(response)
-            @logger.info("DeleteFiles Executed by #{response.user.name}")
+        # summary
+        # パラメータで指定したユーザのファイルのうち、パラメータで指定した日付以前のファイルを削除し、
+        # 削除したファイル一覧をレスポンスとして返す
+        # @param Lita::Response Object
+        def response_deleted_file_list(response)
+            return response.reply(I18n.t("lita.handlers.errors.invalid_date_param")) unless setup_parameters?(response)
+            
+            @logger.info("DeleteFile Executed by #{response.user.name} about #{@user}")
 
             #ファイル一覧を取得
             fileList = Array.new
-            return unless get_file_list(fileList, response)
-
-            #ユーザIDが一致するファイルを削除して一覧を返す
-            response_deleted_files(fileList, response.user.id, response)
-        end
-
-        def response_deleted_someones_files_list(response)
-            @logger.info("DeleteSomeone'sFiles Executed by #{response.user.name} about #{response.matches[0][0]}")
-
-            #ファイル一覧を取得
-            fileList = Array.new
-            return unless get_file_list(fileList, response)
+            return unless get_file_list?(fileList, response)
 
             #ユーザ一覧を取得
             userList = Array.new
-            return unless get_user_list(userList, response)
+            return unless get_user_list?(userList, response)
 
             userId = ''
 
@@ -116,7 +102,30 @@ module Lita
         end
 
         private
-        def get_file_list(file_list, response)
+        def setup_parameters?(response)
+            @logger.info("Date Params #{response.extensions[:kwargs][:date]}")
+            @logger.info("User Params #{response.extensions[:kwargs][:user]}")
+
+            # dateパラメータをチェック
+            date_param = response.extensions[:kwargs][:date]
+            return false unless validate_date_parameter?(date_param)
+
+            @unix_date = Time.parse(date_param.slice(0,4) + "-" + date_param.slice(4,2) + "-" + date_param.slice(6,2)).to_i
+
+            if response.extensions[:kwargs][:user].nil? then
+                # パラメータ指定なしの場合は実行ユーザが対象
+                @user = response.user.name
+            else
+                @user = response.extensions[:kwargs][:user]
+            end
+            true
+        end
+
+        def validate_date_parameter?(date_param)
+            Date.valid_date?(date_param.slice(0,4).to_i,date_param.slice(4,2).to_i,date_param.slice(6,2).to_i)
+        end
+
+        def get_file_list?(file_list, response)
             #Slack Clientを取得
             client = Slack::RPC::Client.new(config.token)
 
@@ -133,7 +142,7 @@ module Lita
             end
         end
 
-        def get_user_list(user_list, response)
+        def get_user_list?(user_list, response)
             #Slack Clientを取得
             client = Slack::RPC::Client.new(config.token)
 
@@ -150,11 +159,11 @@ module Lita
             end
         end
 
-        def response_files(file_list, user_id, user_name, response)
+        def response_files(file_list, user_id, response)
             #ユーザIDが一致するファイルの一覧を返す
-            res = "#{user_name}は以下のファイルを保存しています\n[作成日時] ファイルID ファイル名"
+            res = I18n.t("lita.handlers.response.getfl", {user_name: @user})
             file_list.each do | file |
-                if file['user'] == user_id then
+                if file['user'] == user_id and file['created'] <= @unix_date then
                     res += "\n[#{Time.at(file['created']).strftime("%Y/%m/%d %H:%M").to_s}] #{file['id'].to_s} #{file['name'].to_s}"
                 end
             end
@@ -168,7 +177,7 @@ module Lita
             file_helper = SlackFilesHelper.new()
 
             #ユーザIDが一致するファイルを削除して一覧を返す
-            res = "以下のファイルを削除しました\n[作成日時] ファイルID ファイル名"
+            res = I18n.t("lita.handlers.response.delfl")
             file_list.each do | file |
                 if file['user'] == user_id then
                     result = file_helper.deleteFile(client, file['id'].to_s)
@@ -179,7 +188,6 @@ module Lita
             @logger.info(res)
             response.reply(res)
         end
-
     end
 
     Lita.register_handler(GetUserFilesHandler)

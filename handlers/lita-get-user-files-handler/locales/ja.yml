@@ -2,8 +2,8 @@ ja:
   lita:
     handlers:
       help:
-        getfl: "response files list.\n-d Set EndDate to Read.(YYYYMMDD)\n-u Set File Owner to Read"
-        delfl: "response deleted files list.\n-d Set EndDate to Delete.(YYYYMMDD)\n-u Set File Owner to Delete"
+        getfl: "response files list.\n-d Set EndDate to Read.(Format:YYYYMMDD)\n-u Set File Owner to Read."
+        delfl: "response deleted files list.\n-d Set EndDate to Delete.(Format:YYYYMMDD)\n-u Set File Owner to Delete."
       response:
         getfl: "%{user_name}は以下のファイルを保存しています\n[作成日時] ファイルID ファイル名"
         delfl: "以下のファイルを削除しました\n[作成日時] ファイルID ファイル名"
