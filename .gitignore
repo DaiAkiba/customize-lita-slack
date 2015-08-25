@@ -1,2 +1,3 @@
 vendor/bundle/
 lita_handler.log
+.DS_Store

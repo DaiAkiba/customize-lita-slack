@@ -32,25 +32,19 @@ Lita.configure do |config|
   config.http.host = "0.0.0.0"
   ## The port Lita's web server will listen on.
   config.http.port = 10080
- 
 
   ## Example: Set configuration for any loaded handlers. See the handler's
   ## documentation for options.
   # config.handlers.some_handler.some_config_key = "value"
-  # config.handlers.hello_handler.token = "xoxb-7432385031-Q3m56Etq2tyLRiUI04IpbujF"
-    logfile = "lita_handler.log"
-    logrotate = 7
-    config.handlers.hello_handler.token = ENV["SLACK_API_KEY"]
-    config.handlers.get_user_files_handler.token = ENV["SLACK_API_KEY"]
-    config.handlers.get_user_files_handler.logfile = logfile
-    config.handlers.get_user_files_handler.logrotate = logrotate
+  logfile = "lita_handler.log"
+  logrotate = 7
+  config.handlers.hello_handler.token = ENV["SLACK_API_KEY"]
+  config.handlers.get_user_files_handler.token = ENV["SLACK_API_KEY"]
+  config.handlers.get_user_files_handler.logfile = logfile
+  config.handlers.get_user_files_handler.logrotate = logrotate
 
   # Slack
-  # API Keyはherokuの環境変数に設定
+  # API Keyは環境変数に設定
   # config.adapters.slack.token = ENV["SLACK_API_KEY"]
-    config.adapters.slack.token = ENV["LITA_SLACK_KEY"]
-
-  # herokuのredisアドオンredis to go関連の設定
-  # config.redis[:url] = ENV["REDISTOGO_URL"]
-  # config.http.port = ENV["PORT"]
+  config.adapters.slack.token = ENV["LITA_SLACK_KEY"]
 end

@@ -2,6 +2,7 @@
 
 require 'slack'
 require 'logger'
+require 'date'
 require_relative '../helper/slack_files_helper.rb'
 require_relative '../helper/slack_users_helper.rb'
 
@@ -12,7 +13,14 @@ module Lita
         config :logfile
         config :logrotate
         # get file list
-        route /^getfl/, :response_user_files_list, help: {"getfl" => "resopnse all your files list." }
+        route /^getfl/,
+               :response_files_list,
+               command: true,
+               kwargs: {
+                   date: { short: "d", default: Time.now.strftime("%Y%m%d") },
+                   user: { short: "u" }
+               },
+               help: {"getfl" => "resopnse files list." }
         # get someone's file list
         route /^getsfl\s+(.+)/, :response_someones_files_list
         # delete file list
@@ -25,6 +33,12 @@ module Lita
             super args
             #namespaceを特定するため、::Loggerで実装
             @logger = ::Logger.new(config.logfile, config.logrotate)
+        end
+
+        def response_files_list(response)
+            @logger.info("Params #{response.extensions[:kwargs].length}")
+            @logger.info("Date Params #{response.extensions[:kwargs][:date]}")
+            @logger.info("User Params #{response.extensions[:kwargs][:user]}")
         end
 
         def response_user_files_list(response)

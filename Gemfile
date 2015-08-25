@@ -5,6 +5,7 @@ raise 'Ruby version must be greater than 2.0' unless  RUBY_VERSION.to_f > 2.0
 gem "lita"
 gem "lita-slack"
 gem "slack-ruby"
+gem "lita-keyword-arguments", "~> 1.0.0"
 gem "lita-hello_handler", path: "handlers/lita-hello_handler"
 gem "lita-get-user-files-handler", path: "handlers/lita-get-user-files-handler"
 
