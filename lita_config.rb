@@ -51,3 +51,4 @@ end
 
 # メッセージは日本語に固定
 I18n.default_locale = :ja
+I18n.locale = :ja
