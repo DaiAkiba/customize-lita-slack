@@ -20,7 +20,7 @@ module Lita
                    date: { short: "d", default: Time.now.strftime("%Y%m%d") },
                    user: { short: "u" }
                },
-               help: {"getfl" => t("lita.handlers.help.getfl") }
+               help: {"getfl" => I18n.t("lita.handlers.help.getfl") }
         # delete file list
         route /^delfl/,
                :response_deleted_file_list,
@@ -29,7 +29,7 @@ module Lita
                    date: { short: "d", default: Time.now.strftime("%Y%m%d") },
                    user: { short: "u" }
                },
-               help: {"delfl" => t("lita.handlers.help.delfl") }
+               help: {"delfl" => I18n.t("lita.handlers.help.delfl") }
 
         def initialize( args )
             super args
@@ -42,7 +42,7 @@ module Lita
         # レスポンスとして返す
         # @param Lita::Response Object
         def response_file_list(response)
-            return response.reply(t("lita.handlers.errors.invalid_date_param")) unless setup_parameters?(response)
+            return response.reply(I18n.t("lita.handlers.errors.invalid_date_param")) unless setup_parameters?(response)
 
             @logger.info("GetFile Executed by #{response.user.name} about #{@user}")
 
@@ -74,7 +74,7 @@ module Lita
         # 削除したファイル一覧をレスポンスとして返す
         # @param Lita::Response Object
         def response_deleted_file_list(response)
-            return response.reply(t("lita.handlers.errors.invalid_date_param")) unless setup_parameters?(response)
+            return response.reply(I18n.t("lita.handlers.errors.invalid_date_param")) unless setup_parameters?(response)
             
             @logger.info("DeleteFile Executed by #{response.user.name} about #{@user}")
 
@@ -161,7 +161,7 @@ module Lita
 
         def response_files(file_list, user_id, response)
             #ユーザIDが一致するファイルの一覧を返す
-            res = t("lita.handlers.response.getfl", {user_name: @user})
+            res = I18n.t("lita.handlers.response.getfl", {user_name: @user})
             file_list.each do | file |
                 if file['user'] == user_id and file['created'] <= @unix_date then
                     res += "\n[#{Time.at(file['created']).strftime("%Y/%m/%d %H:%M").to_s}] #{file['id'].to_s} #{file['name'].to_s}"
@@ -177,7 +177,7 @@ module Lita
             file_helper = SlackFilesHelper.new()
 
             #ユーザIDが一致するファイルを削除して一覧を返す
-            res = t("lita.handlers.response.delfl")
+            res = I18n.t("lita.handlers.response.delfl")
             file_list.each do | file |
                 if file['user'] == user_id then
                     result = file_helper.deleteFile(client, file['id'].to_s)
