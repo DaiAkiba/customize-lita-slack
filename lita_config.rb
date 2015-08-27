@@ -48,7 +48,3 @@ Lita.configure do |config|
   # config.adapters.slack.token = ENV["SLACK_API_KEY"]
   config.adapters.slack.token = ENV["LITA_SLACK_KEY"]
 end
-
-# メッセージは日本語に固定
-I18n.default_locale = :ja
-I18n.locale = :ja
